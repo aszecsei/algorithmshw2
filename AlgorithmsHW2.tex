@@ -233,9 +233,13 @@ $k$ is still not $1$, so we determine our middle element, $mid = \left\lfloor \f
 
 Now, $k = 1$. Since neither $A$ nor $B$ are empty, we simply find the minimum of their first elements; $B[1] = 4$ and $A[1] = 5$, so we return $4$, as expected.\\
 
-In general, we can safely divide the two arrays into four sections: $A_1$, $A_2$, $B_1$, and $B_2$, such that $A_1$ and $B_1$ have length $\frac{k}{2}$. Since the arrays are sorted, we know that $A_1 < A_2$, and $B_1 < B_2$. Since we are looking for the $k$th smallest element, and $\left| A_1 \cup B_1 \right| = k$, it must either be the largest element of $A_1 \cup B_1$ or somewhere in $A_2 \cup B_2$.\\
+In general, we can divide the two arrays into four sections: $A_1$, $A_2$, $B_1$, and $B_2$, such that $A_1$ and $B_1$ have length $\frac{k}{2}$. Since we are looking for the $k$th smallest element, there are $k-1$ smaller elements we wish to discard. Let us define $A_{1_M}$ to be the largest element in $A_1$ and $B_{1_M}$ to be the largest element in $B_1$.\\
 
-We compare the last elements of $A_1$ and $B_1$ to determine which \emph{might} contain the $k$th smallest element, and can then safely discard the other. Since we have discarded elements smaller than the $k$th smallest, we update our value of $k$, removing the number of elements we discarded - $\frac{k}{2}$. We continue in this manner, discarding elements when possible, until we have reached our trivial base case, where $k = 1$ and we can simply find the minimal element of $A \cup B$.
+Let us first suppose that the $k$th smallest element is in either $A_1$ or $B_1$; without loss of generality, suppose it is in $A_1$. Then, since $\left| A_1 \cup B_1 \right| = k$, we know that up to $\frac{k}{2} - 1$ of the $k-1$ smaller elements are also in $A_1$. Therefore, there must be at least $\frac{k}{2}$ of the $k-1$ smaller elements in $B_1$. By definition, the $k$th smallest element will be larger than any of the $k-1$ smaller elements, so $A_{1_M} > B_{1_M}$, and our algorithm can safely remove $B_1$, as we know it contains only elements that are smaller than the $k$th smallest element.\\
+
+Alternatively, we can suppose that the $k$th smallest element is in either $A_2$ or $B_2$; without loss of generality, suppose it is in $A_2$. Then, $A_1$ must contain $\frac{k}{2}$ of the $k-1$ smaller elements, since $A_1$ and $B_1$ contain $\frac{k}{2}$ elements. The opposite array ($B_1$) must therefore contain fewer than $\frac{k}{2}$ of the $k-1$ smaller elements, and will therefore have its largest element $B_{1_M}$ be greater than $A_{1_M}$; our algorithm then safely removes $A_1$, as we know it contains only elements that are smaller than the $k$th smallest element.\\
+
+Since we have discarded elements smaller than the $k$th smallest, we update our value of $k$, removing the number of elements we discarded - $\frac{k}{2}$. We continue in this manner, discarding elements when possible, until we have reached our trivial base case, where $k = 1$ and we can simply find the minimal element of $A \cup B$.
 
 \end{homeworkProblem}
 
