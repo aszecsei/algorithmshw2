@@ -11,6 +11,7 @@
 \usepackage{tikz}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
+\usepackage{enumitem}
 
 \usetikzlibrary{automata,positioning}
 
@@ -250,12 +251,20 @@ For this problem, a \emph{subtree} of a binary tree means any connected subgraph
 
 \solution
 
-
+\begin{algorithm}
+	\caption{Algorithm for finding the largest complete subtree}
+	\label{algo:largestcomplete}
+	\begin{algorithmic}[1]
+		\Function{LargestCompleteSubtree}{$root$}
+			
+		\EndFunction{}
+	\end{algorithmic}
+\end{algorithm}
 
 \end{homeworkProblem}
 
 \begin{homeworkProblem}
-\begin{enumerate}
+\begin{enumerate}[label=(\alph*)]
 	\item Let $A[1..m]$ and $B[1..n]$ be two arbitrary arrays. A \emph{common subsequence} of $A$ and $B$ is both a subsequence of $A$ and a subsequence of $B$. Give a simple recursive definition for the function $lcs(A,B)$, which gives the length of the \emph{longest} common subsequence of $A$ and $B$.
 	\item Call a sequence $X[1..n]$ \emph{oscillating} if $X[i] < X[i+1]$ for all even $i$, and $X[i] > X[i+1]$ for all odd $i$. Give a simple recursive definition for the function $los(A)$, which gives the length of the longest oscillating subsequence of an arbitrary array $A$ of integers.
 	\item Call a sequence $X[1..n]$ \emph{accelerating} if $2 \times X[i] < X[i-1] + X[i+1]$ for all $i$. Give a simple recursive definition for the function $lxs(A)$, which gives the length of the longest accelerating subsequence of an arbitrary array $A$ of integers.
