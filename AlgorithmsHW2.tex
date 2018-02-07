@@ -137,6 +137,9 @@
 \newcommand{\Cov}{\mathrm{Cov}}
 \newcommand{\Bias}{\mathrm{Bias}}
 
+% Set from 1 to N
+\newcommand{\XYZ}[1]{\left\{1,\ldots,{#1}\right\}}
+
 \begin{document}
 
 \maketitle
@@ -156,24 +159,84 @@ Suppose we are given an array $A[1..n]$ with the special property that $A[1] \ge
 	\label{tab:ExampleArray}
 \end{table}
 
-
 We can obviously find a local minimum in $O(n)$ time by scanning through the array. Describe and analyze an algorithm that finds a local minimum in $O(\log n)$ time. \emph{[Hint: With the given boundary conditions, the array \textbf{must} have at least one local minimum. Why?]}\\
 
 \solution
 
+\begin{algorithm}
+	\caption{Algorithm for finding a local minimum}
+	\label{algo:LocalMinimum}
+	\begin{algorithmic}[1]
+		\Function{FindLocalMinimum}{$A[1..n]$}
+			\State{$median \gets n/2$}
+			\If{$A[median] > A[median-1]$}
+				\State{\Return{\Call{FindLocalMinimum}{$A[1..n/2]$}}}
+			\ElsIf{$A[median] > A[median+1]$}
+				\State{\Return{\Call{FindLocalMinimum}{$A[n/2..n]$}}}
+			\Else{}
+				\State{\Return{$median$}}
+			\EndIf{}
+		\EndFunction{}
+	\end{algorithmic}
+\end{algorithm}
+
+Given the boundary conditions, the array \textbf{must} have at least one local minimum. To prove this, we can assume that the array has no local minimum. This means that the array must be either always increase or always decrease throughout the array; formally, $\forall x \in \XYZ{n}$, $A[x] > A[x-1]$ or $\forall x \in \XYZ{n}$, $A[x] > A[x+1]$. However since $A[1] \geq A[2]$ and $A[n-1] \leq A[n]$, this cannot be true; specifically it must \emph{start} by decreasing such that $A[x-1] \geq A[x]$ and then, at some point, stop decreasing, such that $A[x] \leq A[x+1]$. This point is the local minimum, since $A[x-1] \geq A[x] \leq A[x+1]$.\\
+
+Given some median point, $m$, we can detect whether our array is increasing or decreasing at that point by examining the neighboring points. If the array is increasing, $A[m] \geq A[m-1]$. We know that the array starts by decreasing, so it must have started increasing since then; thus we can narrow our search for the local minimum to the first half of the array.\\
+
+If the array is decreasing, $A[m] \geq A[m+1]$. Since the array ends with an increase, we know it must start increasing at some point after the median; thus we can narrow our search to the last half of the array.\\
+
+If neither of these options is true, we must be at either a local maximum or minimum. If we are at a local maximum, then $A[m] \geq A[m-1]$, so we simply search the first half of the array; if we are at a local minimum, $A[m] \not> A[m+1]$ and $A[m] \not> A[m-1]$, so we reach our final branch and simply return $m$.
+
 \end{homeworkProblem}
 
-\pagebreak
-
 \begin{homeworkProblem}
-Suppose we are given two sorted arrays $A[1..n]$ and $B[1..n]$ and an integer $k$. Describe an algorithm to find the $k$th smallest element in the union of $A$ and $B$ in $\Theta(\log n)$ time. For example, if $k = n$, your algorithm should return the smallest element of $A \cup B$; if $k = n$, your algorithm should return the median of $A \cup B$. You can assume that the arrays contain no duplicate elements. \emph{[Hint: First solve the special case $k = n$.]}\\
+Suppose we are given two sorted arrays $A[1..n]$ and $B[1..n]$ and an integer $k$. Describe an algorithm to find the $k$th smallest element in the union of $A$ and $B$ in $\Theta(\log n)$ time. For example, if $k = 1$, your algorithm should return the smallest element of $A \cup B$; if $k = n$, your algorithm should return the median of $A \cup B$. You can assume that the arrays contain no duplicate elements. \emph{[Hint: First solve the special case $k = n$.]}\\
 
 \solution
 
+\begin{algorithm}
+	\caption{Algorithm for finding the $k$th smallest element in a union}
+	\label{algo:kthSmallest}
+	\begin{algorithmic}[1]
+		\Function{FindKSmallest}{$A[1..m], B[1..n], k$}
+			\If{$k = 1$}
+				\If{$m = 0$}
+					\State{\Return{$B[1]$}}
+				\ElsIf{$n = 0$}
+					\State{\Return{$A[1]$}}
+				\Else{}
+					\State{\Return{$min(A[1], B[1])$}}
+				\EndIf{}
+			\Else{}
+				\State{$mid \gets \left\lfloor \frac{k}{2} \right\rfloor$}
+				\If{$mid \geq m + 1$}
+					\State{\Call{FindKSmallest}{$A, B[mid+1..n], k - mid$}}
+				\ElsIf{$mid \geq n + 1$}
+					\State{\Call{FindKSmallest}{$A[mid+1..m], B, k - mid$}}
+				\ElsIf{$A[mid] < B[mid]$}
+					\State{\Call{FindKSmallest}{$A[mid+1..m], B, k - mid$}}
+				\Else{}
+					\State{\Call{FindKSmallest}{$A, B[mid+1..n], k - mid$}}
+				\EndIf{}
+			\EndIf{}
+		\EndFunction{}
+	\end{algorithmic}
+\end{algorithm}
+
+As an example, we will run through the algorithm with $A = \{1, 3, 5, 7\}$ and $B = \{2, 4, 6, 8\}$, with $k = 4$.\\
+
+Since $k \neq 1$, we determine a middle element, $mid = \left\lfloor \frac{k}{2} \right\rfloor = 2$. Since $mid < m + 1$ and $mid < n + 1$, we compare the second element of each array. $A$ has a smaller element, since $A[2] = 3 < B[2] = 4$, so we recurse with a new $A = \{5, 7\}$, $B$ remaining the same, and $k = k - mid = 4 - 2 = 2$.\\
+
+$k$ is still not $1$, so we determine our middle element, $mid = \left\lfloor \frac{k}{2} \right\rfloor = 1$. Since $mid < m + 1$ and $mid < n + 1$, we compare the first element of each array. $B$ has a smaller element, since $B[1] = 2$, so we recurse with a new $B = \{4, 6, 8\}$, $A$ remaining the same, and $k = k - mid = 2 - 1 = 1$.\\
+
+Now, $k = 1$. Since neither $A$ nor $B$ are empty, we simply find the minimum of their first elements; $B[1] = 4$ and $A[1] = 5$, so we return $4$, as expected.\\
+
+In general, we can safely divide the two arrays into four sections: $A_1$, $A_2$, $B_1$, and $B_2$, such that $A_1$ and $B_1$ have length $\frac{k}{2}$. Since the arrays are sorted, we know that $A_1 < A_2$, and $B_1 < B_2$. Since we are looking for the $k$th smallest element, and $\left| A_1 \cup B_1 \right| = k$, it must either be the largest element of $A_1 \cup B_1$ or somewhere in $A_2 \cup B_2$.\\
+
+We compare the last elements of $A_1$ and $B_1$ to determine which \emph{might} contain the $k$th smallest element, and can then safely discard the other. Since we have discarded elements smaller than the $k$th smallest, we update our value of $k$, removing the number of elements we discarded - $\frac{k}{2}$. We continue in this manner, discarding elements when possible, until we have reached our trivial base case, where $k = 1$ and we can simply find the minimal element of $A \cup B$.
 
 \end{homeworkProblem}
-
-\pagebreak
 
 \begin{homeworkProblem}
 For this problem, a \emph{subtree} of a binary tree means any connected subgraph. A binary tree is \emph{complete} if every internal node has two children, and every leaf has exactly the same depth. Describe and analyze a recursive algorithm to compute the \emph{largest complete subtree} of a given binary tree. Your algorithm should return the root and the depth of this subtree.
@@ -190,8 +253,6 @@ For this problem, a \emph{subtree} of a binary tree means any connected subgraph
 
 
 \end{homeworkProblem}
-
-\pagebreak
 
 \begin{homeworkProblem}
 \begin{enumerate}
