@@ -140,6 +140,7 @@
 
 % Set from 1 to N
 \newcommand{\XYZ}[1]{\left\{1,\ldots,{#1}\right\}}
+\newcommand{\Break}{\textbf{break} }
 
 \begin{document}
 
@@ -190,6 +191,8 @@ If the array is decreasing, $A[m] \geq A[m+1]$. Since the array ends with an inc
 If neither of these options is true, we must be at either a local maximum or minimum. If we are at a local maximum, then $A[m] \geq A[m-1]$, so we simply search the first half of the array; if we are at a local minimum, $A[m] \not> A[m+1]$ and $A[m] \not> A[m-1]$, so we reach our final branch and simply return $m$.
 
 \end{homeworkProblem}
+
+\pagebreak
 
 \begin{homeworkProblem}
 Suppose we are given two sorted arrays $A[1..n]$ and $B[1..n]$ and an integer $k$. Describe an algorithm to find the $k$th smallest element in the union of $A$ and $B$ in $\Theta(\log n)$ time. For example, if $k = 1$, your algorithm should return the smallest element of $A \cup B$; if $k = n$, your algorithm should return the median of $A \cup B$. You can assume that the arrays contain no duplicate elements. \emph{[Hint: First solve the special case $k = n$.]}\\
@@ -243,6 +246,8 @@ Since we have discarded elements smaller than the $k$th smallest, we update our 
 
 \end{homeworkProblem}
 
+\pagebreak
+
 \begin{homeworkProblem}
 For this problem, a \emph{subtree} of a binary tree means any connected subgraph. A binary tree is \emph{complete} if every internal node has two children, and every leaf has exactly the same depth. Describe and analyze a recursive algorithm to compute the \emph{largest complete subtree} of a given binary tree. Your algorithm should return the root and the depth of this subtree.
 
@@ -253,19 +258,77 @@ For this problem, a \emph{subtree} of a binary tree means any connected subgraph
 	\label{fig:binary-subtree}
 \end{figure}
 
-\solution
+\solution\\
 
 \begin{algorithm}
 	\caption{Algorithm for finding the largest complete subtree}
 	\label{algo:largestcomplete}
 	\begin{algorithmic}[1]
-		\Function{LargestCompleteSubtree}{$root$}
-			
+		\Function{LargestCompleteSubtreeAt}{$node$}
+			\If{$node.left$ exists and $node.right$ exists}
+				\State{$childDepth \gets $ the minimum of \Call{LargestCompleteSubtreeAt}{$node.left$} and \Call{LargestCompleteSubtreeAt}{$node.right$}}
+				\State{\Return{$1 + childDepth$}}
+			\Else{}
+				\State{\Return{0}}
+			\EndIf{}
+		\EndFunction{}
+		\Function{LargestCompleteSubtreeAt}{$root$}
+			\State{$rootDepth \gets$ \Call{LargestCompleteSubtreeAt}{$root$}}
+			\If{$node.left$ exists}
+				\State{$leftDepth, leftNode \gets$ \Call{LargestCompleteSubtree}{$node.left$}}
+			\EndIf{}
+			\If{$node.right$ exists}
+				\State{$rightDepth, rightNode \gets$ \Call{LargestCompleteSubtree}{$node.left$}}
+			\EndIf{}
+			\State{$maxDepth \gets$ the maximum of $rootDepth$, $leftDepth$, and $rightDepth$}
+			\If{$maxDepth = rootDepth$}
+				\State{\Return{$maxDepth, root$}}
+			\ElsIf{$maxDepth = leftDepth$}
+				\State{\Return{$maxDepth, leftNode$}}
+			\Else{}
+				\State{\Return{$maxDepth, rightNode$}}
+			\EndIf{}
 		\EndFunction{}
 	\end{algorithmic}
 \end{algorithm}
 
+Our first function exists to determine the largest complete subtree beginning at a particular node. This way, we can separate our concerns to aid with recursion. Our second function repeatedly calls the first function to determine the largest complete subtree at any position in the tree; we do this by recursing through it and finding the largest complete subtree starting from every node in the tree.\\
+
+The run-time of \alg{LargestCompleteSubtreeAt} has a recurrence of $T_1(n) = 2T_1(\frac{n}{2}) + 1$. Using the Master Theorem, we can solve this recurrence:
+
+\begin{equation}
+\begin{split}
+a & = 2\\
+f(\frac{n}{b}) &= 1\\
+f(n) &= 1\\
+a f(\frac{n}{b}) &= K f(n)\\
+2 \times 1 &= K \times 1\\
+K &= 2
+\end{split}
+\end{equation}
+
+Since $K > 1$, the Master Theorem states that $T_1(n) = \Theta(n^{\log_b a})$; with $b = 2$ and $a = 2$, we get $T_1(n) = \Theta(n^{\log_2 2})$, which trivially reduces to $T_1(n) = \Theta(n^1) = \Theta(n)$.\\
+
+The unoptimized run-time of \alg{LargestCompleteSubtree} has a recurrence of $T_2(n) = 2T_2(frac{n}{2}) + T_1(n)$. Using the Master Theorem, we get:
+
+\begin{equation}
+\begin{split}
+a &= 2\\
+f(\frac{n}{b}) &= \frac{n}{2}\\
+f(n) &= n\\
+a f(\frac{n}{b}) &= K f(n)\\
+2 \frac{n}{2} &= K \times n\\
+K &= 1
+\end{split}
+\end{equation}
+
+Since $K = 1$, the Master Theorem states that $T_2(n) = \Theta(f(n)\log_b n)$, so $T_2(n) = \Theta(n\log_2 n)$.\\
+
+This could easily be optimized with memoization; we can cache the results of \alg{LargestCompleteSubtreeAt}. In this case, no repeated calculations of \alg{LargestCompleteSubtreeAt} occur, so rather than running in $\Theta(n\log_2 n)$, it would run in $\Theta(n)$.
+
 \end{homeworkProblem}
+
+\pagebreak
 
 \begin{homeworkProblem}
 \begin{enumerate}[label=(\alph*)]
@@ -274,9 +337,84 @@ For this problem, a \emph{subtree} of a binary tree means any connected subgraph
 	\item Call a sequence $X[1..n]$ \emph{accelerating} if $2 \times X[i] < X[i-1] + X[i+1]$ for all $i$. Give a simple recursive definition for the function $lxs(A)$, which gives the length of the longest accelerating subsequence of an arbitrary array $A$ of integers.
 \end{enumerate}
 
-\solution
+\solution\\
 
+\part
 
+\begin{algorithm}
+	\caption{Algorithm for finding the length of the longest common subsequence}
+	\label{algo:longestcommon}
+	\begin{algorithmic}[1]
+		\Function{LCS}{$A[1..m], B[1..n]$}
+			\If{$m = 0$ or $n = 0$}
+				\State{\Return{0}}
+			\ElsIf{$A[1] \neq B[1]$}
+				\State{$a \gets$ \Call{LCS}{$A, B[2..n]$}}
+			\Else{}
+				\State{$a \gets 1$}
+				\While{$a < m$ and $a < n$ and $A[a] = B[a]$}
+					\State{$a \gets a + 1$}
+				\EndWhile{}
+				\State{$a \gets$ the maximum of $a$ and \Call{LCS}{$A, B[a..n]$}}
+			\EndIf{}
+			\State{$b \gets$ \Call{LCS}{$A[2..m], B$}}
+			\State{\Return{the maximum of $a$ and $b$}}
+		\EndFunction{}
+	\end{algorithmic}
+\end{algorithm}
+
+\pagebreak
+\part
+
+\begin{algorithm}
+	\caption{Algorithm for finding the length of the longest oscillating subsequence}
+	\label{algo:longestosc}
+	\begin{algorithmic}[1]
+		\Function{LOS}{$X[1..n]$}
+			\If{$n \leq 1$}
+				\State{\Return{$n$}}
+			\Else{}
+				\State{$i \gets 1$}
+				\While{$i + 1 < n$}
+					\If{$i$ is even}
+						\If{$X[i] \geq X[i + 1]$}
+							\State{\Break{}}
+						\EndIf{}
+					\Else{}
+						\If{$X[i] \leq X[i + 1]$}
+							\State{\Break{}}
+						\EndIf{}
+					\EndIf{}
+					\State{$i \gets i + 1$}
+				\EndWhile
+				\State{\Return{the max of $i$ and \Call{LOS}{$X[2..n]$}}}
+			\EndIf{}
+		\EndFunction{}
+	\end{algorithmic}
+\end{algorithm}
+
+\part
+
+\begin{algorithm}
+	\caption{Algorithm for finding the length of the longest accelerating subsequence}
+	\label{algo:longestaccel}
+	\begin{algorithmic}[1]
+		\Function{LXS}{$X[1..n]$}
+			\If{$n \leq 1$}
+				\State{\Return{$n$}}
+			\Else{}
+				\State{$i \gets 2$}
+				\While{$i + 1 < n$}
+					\If{$2 \times X[i] \geq X[i - 1] + X[i + 1]$}
+						\State{\Break{}}
+					\EndIf{}
+					\State{$i \gets i + 1$}
+				\EndWhile
+				\State{\Return{the max of $1 + i$ and \Call{LXS}{$X[2..n]$}}}
+			\EndIf{}
+		\EndFunction{}
+	\end{algorithmic}
+\end{algorithm}
 
 \end{homeworkProblem}
 
