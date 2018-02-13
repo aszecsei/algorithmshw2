@@ -182,7 +182,7 @@ We can obviously find a local minimum in $O(n)$ time by scanning through the arr
 	\end{algorithmic}
 \end{algorithm}
 
-Given the boundary conditions, the array \textbf{must} have at least one local minimum. To prove this, we can assume that the array has no local minimum. This means that the array must be either always increase or always decrease throughout the array; formally, $\forall x \in \XYZ{n}$, $A[x] > A[x-1]$ or $\forall x \in \XYZ{n}$, $A[x] > A[x+1]$. However since $A[1] \geq A[2]$ and $A[n-1] \leq A[n]$, this cannot be true; specifically it must \emph{start} by decreasing such that $A[x-1] \geq A[x]$ and then, at some point, stop decreasing, such that $A[x] \leq A[x+1]$. This point is the local minimum, since $A[x-1] \geq A[x] \leq A[x+1]$.\\
+Given the boundary conditions, the array \textbf{must} have at least one local minimum. To prove this, we can assume that the array has no local minimum. This means that the array must be either always increase or always decrease throughout the array; formally, $\forall x \in \XYZ{n}$, $A[x] > A[x-1]$ or $\forall x \in \XYZ{n}$, $A[x] > A[x+1]$. However since $A[1] \geq A[2]$ and $A[n-1] \leq A[n]$, this cannot be true; specifically it must \emph{start} by decreasing such that $A[x-1] \geq A[x]$ and then, at some point, start increasing, such that $A[x] \leq A[x+1]$. This point is the local minimum, since $A[x-1] \geq A[x] \leq A[x+1]$.\\
 
 Given some median point, $m$, we can detect whether our array is increasing or decreasing at that point by examining the neighboring points. If the array is increasing, $A[m] \geq A[m-1]$. We know that the array starts by decreasing, so it must have started increasing since then; thus we can narrow our search for the local minimum to the first half of the array.\\
 
@@ -309,7 +309,7 @@ K &= 2
 
 Since $K > 1$, the Master Theorem states that $T_1(n) = \Theta(n^{\log_b a})$; with $b = 2$ and $a = 2$, we get $T_1(n) = \Theta(n^{\log_2 2})$, which trivially reduces to $T_1(n) = \Theta(n^1) = \Theta(n)$.\\
 
-The unoptimized run-time of \alg{LargestCompleteSubtree} has a recurrence of $T_2(n) = 2T_2(frac{n}{2}) + T_1(n)$. Using the Master Theorem, we get:
+The unoptimized run-time of \alg{LargestCompleteSubtree} has a recurrence of $T_2(n) = 2T_2(\frac{n}{2}) + T_1(n)$. Using the Master Theorem, we get:
 
 \begin{equation}
 \begin{split}
@@ -400,17 +400,17 @@ This could easily be optimized with memoization; we can cache the results of \al
 	\label{algo:longestaccel}
 	\begin{algorithmic}[1]
 		\Function{LXS}{$X[1..n]$}
-			\If{$n \leq 1$}
+			\If{$n \leq 2$}
 				\State{\Return{$n$}}
 			\Else{}
 				\State{$i \gets 2$}
-				\While{$i + 1 < n$}
+				\While{$i < n$}
 					\If{$2 \times X[i] \geq X[i - 1] + X[i + 1]$}
 						\State{\Break{}}
 					\EndIf{}
 					\State{$i \gets i + 1$}
 				\EndWhile
-				\State{\Return{the max of $1 + i$ and \Call{LXS}{$X[2..n]$}}}
+				\State{\Return{the max of $i$ and \Call{LXS}{$X[2..n]$}}}
 			\EndIf{}
 		\EndFunction{}
 	\end{algorithmic}

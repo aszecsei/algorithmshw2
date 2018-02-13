@@ -11,14 +11,14 @@ MaxPos.x=-1
 MaxPos.y=-1
 NormalPos.left=4
 NormalPos.top=44
-NormalPos.right=2642
-NormalPos.bottom=1299
+NormalPos.right=1138
+NormalPos.bottom=1284
 Class=LaTeXView
 Document=AlgorithmsHW2.tex
 
 [Frame0_View0,0]
-TopLine=248
-Cursor=10561
+TopLine=153
+Cursor=17283
 
 [SessionInfo]
 FrameCount=1
