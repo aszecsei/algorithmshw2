@@ -331,6 +331,12 @@ This could easily be optimized with memoization; we can cache the results of \al
 \pagebreak
 
 \begin{homeworkProblem}
+A \emph{sequence of integers} is either empty or an integer followed by a sequence of integers.\\
+
+The only \emph{subsequence} of the empty sequence is the empty sequence.\\
+
+A \emph{subsequence} of $A[1..n]$ is either a subsequence of $A[2..n]$ or $A[1]$ followed by a subsequence of $A[2..n]$.\\
+
 \begin{enumerate}[label=(\alph*)]
 	\item Let $A[1..m]$ and $B[1..n]$ be two arbitrary arrays. A \emph{common subsequence} of $A$ and $B$ is both a subsequence of $A$ and a subsequence of $B$. Give a simple recursive definition for the function $lcs(A,B)$, which gives the length of the \emph{longest} common subsequence of $A$ and $B$.
 	\item Call a sequence $X[1..n]$ \emph{oscillating} if $X[i] < X[i+1]$ for all even $i$, and $X[i] > X[i+1]$ for all odd $i$. Give a simple recursive definition for the function $los(A)$, which gives the length of the longest oscillating subsequence of an arbitrary array $A$ of integers.
@@ -348,20 +354,20 @@ This could easily be optimized with memoization; we can cache the results of \al
 		\Function{LCS}{$A[1..m], B[1..n]$}
 			\If{$m = 0$ or $n = 0$}
 				\State{\Return{0}}
-			\ElsIf{$A[1] \neq B[1]$}
-				\State{$a \gets$ \Call{LCS}{$A, B[2..n]$}}
 			\Else{}
-				\State{$a \gets 1$}
-				\While{$a < m$ and $a < n$ and $A[a] = B[a]$}
-					\State{$a \gets a + 1$}
-				\EndWhile{}
-				\State{$a \gets$ the maximum of $a$ and \Call{LCS}{$A, B[a..n]$}}
+				\State{$a \gets$ \Call{LCS}{$A[2..m], B[1..n]$}}
+				\State{$b \gets$ \Call{LCS}{$A[1..m], B[2..n]$}}
+				\State{$c \gets 0$}
+				\If{$A[1] = B[1]$}
+					\State{$c \gets 1 +$ \Call{LCS}{$A[2..m], B[2..n]$}}
+				\EndIf{}
+				\State{$r \gets$ the maximum of $a$, $b$, and $c$}
 			\EndIf{}
-			\State{$b \gets$ \Call{LCS}{$A[2..m], B$}}
-			\State{\Return{the maximum of $a$ and $b$}}
 		\EndFunction{}
 	\end{algorithmic}
 \end{algorithm}
+
+This is the simplest of the three sections; we simply provide 3 options for the algorithm. The longest common subsequence may lie further down $A$, further down $B$, or include the first values of both $A$ and $B$ - though this third option is only valid if $A$ and $B$ both have the same first values. The algorithm calculates all three routes, and compares the results at the end to determine the correct result.
 
 \pagebreak
 \part
@@ -371,28 +377,41 @@ This could easily be optimized with memoization; we can cache the results of \al
 	\label{algo:longestosc}
 	\begin{algorithmic}[1]
 		\Function{LOS}{$X[1..n]$}
-			\If{$n \leq 1$}
-				\State{\Return{$n$}}
-			\Else{}
-				\State{$i \gets 1$}
-				\While{$i + 1 < n$}
-					\If{$i$ is even}
-						\If{$X[i] \geq X[i + 1]$}
-							\State{\Break{}}
-						\EndIf{}
-					\Else{}
-						\If{$X[i] \leq X[i + 1]$}
-							\State{\Break{}}
-						\EndIf{}
-					\EndIf{}
-					\State{$i \gets i + 1$}
-				\EndWhile
-				\State{\Return{the max of $i$ and \Call{LOS}{$X[2..n]$}}}
-			\EndIf{}
+			\State{\Return{\Call{LOS2}{$X[1..n], null, false$}}}
 		\EndFunction{}
+		\Function{LOS2}{$X[1..n], prevValue, isEven$}
+			\If{$n = 0$}
+				\State{\Return{$0$}}
+			\Else{}
+				\If{$prevValue = null$}
+					\State{$result \gets true$}
+				\ElsIf{$isEven$}
+					\State{$result \gets prevValue > X[1]$}
+				\Else{}
+					\State{$result \gets prevValue < X[1]$}
+				\EndIf{}
+				
+				\State{$a \gets$ \Call{LOS2}{$X[2..n], prevValue, isEven$}}
+				\If{$result$}
+					\State{$b \gets 1 +$ \Call{LOS2}{$X[2..n], X[1],$ not $isEven$}}
+				\Else{}
+					\State{$b \gets 0$}
+				\EndIf{}
+				\State{\Return{the maximum of $a$ and $b$}}
+			\EndIf{}
+		\EndFunction
 	\end{algorithmic}
 \end{algorithm}
 
+For this solution, we need a helper function to keep track of whether the sequence should be increasing or decreasing, as well as what the previous entry in the sequence was.\\
+
+First we check the length of the array, as a base case. Then, we try skipping the current entry, in the $a$ path.\\
+
+Finally, we determine if the current entry is acceptable. If there was no prior entry, then we can use the current entry; otherwise, we must check whether the current entry is increasing or decreasing compared to the prior entry. If the current entry is acceptable, we attempt to continue the sequence in the $b$ path.\\
+
+Once both the $a$ and $b$ paths have been considered, we simply return the larger of the two results.
+
+\pagebreak
 \part
 
 \begin{algorithm}
@@ -400,21 +419,44 @@ This could easily be optimized with memoization; we can cache the results of \al
 	\label{algo:longestaccel}
 	\begin{algorithmic}[1]
 		\Function{LXS}{$X[1..n]$}
-			\If{$n \leq 2$}
-				\State{\Return{$n$}}
+			\State{\Return{\Call{LXS2}{$X[1..n], null, null$}}}
+		\EndFunction{}
+		\Function{LXS2}{$X[1..n], prevValue, prevDiff$}
+			\If{$n = 0$}
+				\State{\Return{$0$}}
 			\Else{}
-				\State{$i \gets 2$}
-				\While{$i < n$}
-					\If{$2 \times X[i] \geq X[i - 1] + X[i + 1]$}
-						\State{\Break{}}
+				\If{$prevValue = null$ or $prevDiff = null$}
+					\State{$result \gets true$}
+				\Else{}
+					\State{$result \gets X[1] - prevValue > prevDiff$}
+				\EndIf{}
+				\State{$a \gets$ \Call{LXS2}{$X[2..n], prevValue, prevDiff$}}
+				\If{$result$}
+					\If{$prevValue = null$}
+						\State{$b \gets 1 +$ \Call{LXS2}{$X[2..n], X[1], null$}}
+					\Else{}
+						\State{$b \gets 1 +$ \Call{LXS2}{$X[2..n], X[1], X[1] - prevValue$}}
 					\EndIf{}
-					\State{$i \gets i + 1$}
-				\EndWhile
-				\State{\Return{the max of $i$ and \Call{LXS}{$X[2..n]$}}}
+				\Else{}
+					\State{$b \gets 0$}
+				\EndIf{}
+				\State{\Return{the maximum of $a$ and $b$}}
 			\EndIf{}
 		\EndFunction{}
 	\end{algorithmic}
 \end{algorithm}
+
+Similar to the previous problem, we use a helper function to keep track of the previous value in the sequence ($X[i]$, as well as the previous difference in values; that is, $X[i] - X[i-1]$.\\
+
+Again, we calculate an $a$ path in which we skip the current value in $X$; then we calculate a $B$ path if either:
+
+\begin{enumerate}
+	\item There was no prior value (the first entry in the subsequence)
+	\item There was no prior difference in values (The second entry in the subsequence)
+	\item The current value satisfies the properties of an accelerating subsequence, so that $X[i+1] - X[i] > X[i] - X[i-1]$.
+\end{enumerate}
+
+If any of these are true, then the current value of $X$ is a viable addition to the sequence. Finally, we compare the results of the $a$ and $b$ paths to determine which is larger.
 
 \end{homeworkProblem}
 
